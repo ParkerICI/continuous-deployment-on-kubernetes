@@ -53,6 +53,15 @@ In this section you will start your [Google Cloud Shell](https://cloud.google.co
   $ cd continuous-deployment-on-kubernetes
   ```
 
+## Build the jnlp-slave Docker Image
+
+```shell
+cd ./jnlp-slave
+docker built -t gcr.io/<GCLOUD-PROJECT-ID>/jnlp-gcloud
+```
+
+Replace the Image field in ./jenkins/values.yaml with the tag from the image above.
+
 ## Create a Kubernetes Cluster
 You'll use Google Container Engine to create and manage your Kubernetes cluster. Provision the cluster with `gcloud`:
 
@@ -96,7 +105,7 @@ In this lab, you will use Helm to install Jenkins from the Charts repository. He
     ```
 
 1. Add yourself as a cluster administrator in the cluster's RBAC so that you can give Jenkins permissions in the cluster:
-    
+
     ```shell
     kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
     ```
@@ -186,6 +195,18 @@ You've got a Kubernetes cluster managed by Google Container Engine. You've deplo
 * a (non-public) service that exposes Jenkins to its agent containers
 
 You have the tools to build a continuous deployment pipeline. Now you need a sample app to deploy continuously.
+
+## Setup Jenkins
+
+Grant the cd-jenkins user the cluster-admin privilige
+
+```shell
+kubectl create clusterrolebinding cluster-admin-binding-jenkins --clusterrole=cluster-admin --user=cd-jenkins
+```
+
+Go to 'Manage Jenkins' and then 'Configure System'. Under 'Github' add a personal access token for a utility account with access to the repositories that need to be automatically built. Make sure it has permissions to interact and modify repos and hooks. Under 'Kubernetes' make sure that the image tag and version are correct. Open the advanced settings and set the service account to cd-jenkins.
+
+When adding the project, add it as a multibranch pipeline.
 
 ## The sample app
 You'll use a very simple sample application - `gceme` - as the basis for your CD pipeline. `gceme` is written in Go and is located in the `sample-app` directory in this repo. When you run the `gceme` binary on a GCE instance, it displays the instance's metadata in a pretty card:
@@ -343,7 +364,7 @@ The first run of the job will fail until the project name is set properly in the
 ### Phase 3:  Modify Jenkinsfile, then build and test the app
 
 Create a branch for the canary environment called `canary`
-   
+
    ```shell
     $ git checkout -b canary
    ```
