@@ -12,7 +12,8 @@ Master:
   Cpu: "1"
   Memory: "3500Mi"
   JavaOpts: "-Xms3500m -Xmx3500m"
-  ServiceType: ClusterIP
+  ServiceType: LoadBalancer
+  ServicePort: 80
 Agent:
   Enabled: true
   resources:

@@ -1,0 +1,40 @@
+Master:
+  InstallPlugins:
+    - kubernetes:1.12.6
+    - workflow-job:2.31
+    - workflow-aggregator:2.5
+    - credentials-binding:1.16
+    - git:3.9.1
+    - google-oauth-plugin:0.6
+    - google-source-plugin:0.3
+    - github:1.29.3
+    - pipeline-github:2.1
+  Cpu: "1"
+  Memory: "3500Mi"
+  JavaOpts: "-Xms3500m -Xmx3500m"
+  ServiceType: LoadBalancer
+  ServicePort: 80
+Agent:
+  Enabled: true
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "256Mi"
+    limits:
+      cpu: "1"
+      memory: "512Mi"
+  Image: gcr.io/pici-production/jnlp-gcloud
+  ImageTag: latest
+  AlwaysPullImage: true
+  volumes:
+   - type: HostPath
+     volumeName: docker-sock
+     hostPath: /var/run/docker.sock
+     mountPath: /var/run/docker.sock
+Persistence:
+  Size: 100Gi
+NetworkPolicy:
+  ApiVersion: networking.k8s.io/v1
+rbac:
+  install: true
+  serviceAccountName: cd-jenkins

@@ -57,7 +57,7 @@ In this section you will start your [Google Cloud Shell](https://cloud.google.co
 
 ```shell
 cd ./jnlp-slave
-docker built -t gcr.io/<GCLOUD-PROJECT-ID>/jnlp-gcloud
+docker build -t gcr.io/<GCLOUD-PROJECT-ID>/jnlp-gcloud
 ```
 
 Replace the Image field in ./jenkins/values.yaml with the tag from the image above.
@@ -138,7 +138,7 @@ You will use a custom [values file](https://github.com/kubernetes/helm/blob/mast
 1. Use the Helm CLI to deploy the chart with your configuration set.
 
     ```shell
-    ./helm install -n cd stable/jenkins -f jenkins/values.yaml --version 0.16.6 --wait
+    ./helm install -n cd stable/jenkins -f ./jenkins/values.yaml --version 0.16.6 --wait
     ```
 
 1. Once that command completes ensure the Jenkins pod goes to the `Running` state and the container is in the `READY` state:
@@ -149,11 +149,10 @@ You will use a custom [values file](https://github.com/kubernetes/helm/blob/mast
     cd-jenkins-7c786475dd-vbhg4   1/1       Running   0          1m
     ```
 
-1. Run the following command to setup port forwarding to the Jenkins UI from the Cloud Shell
+1. Run the following command to get the IP address of jenkins
 
     ```shell
-    export POD_NAME=$(kubectl get pods -l "component=cd-jenkins-master" -o jsonpath="{.items[0].metadata.name}")
-    kubectl port-forward $POD_NAME 8080:8080 >> /dev/null &
+    kubectl get services
     ```
 
 1. Now, check that the Jenkins Service was created properly:
@@ -203,6 +202,8 @@ Grant the cd-jenkins user the cluster-admin privilige
 ```shell
 kubectl create clusterrolebinding cluster-admin-binding-jenkins --clusterrole=cluster-admin --user=cd-jenkins
 ```
+
+Go to credentials, system, global, then add credentials. Select Google Service account from Metadata then click ok.
 
 Go to 'Manage Jenkins' and then 'Configure System'. Under 'Github' add a personal access token for a utility account with access to the repositories that need to be automatically built. Make sure it has permissions to interact and modify repos and hooks. Under 'Kubernetes' make sure that the image tag and version are correct. Open the advanced settings and set the service account to cd-jenkins.
 
